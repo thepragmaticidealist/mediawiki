@@ -1,0 +1,39 @@
+# Rename this file to docker-compose.yml and fill in the db and services environment values
+
+services:
+  wiki:
+    image: mediawiki:latest
+    ports:
+      - "8081:80"
+    volumes:
+      # This volume stores the wiki's content (pages, images)
+      - mw_data:/var/www/html
+      # - images:/var/www/html/images
+      # This mounts your LocalSettings.php so changes persist
+      - ./LocalSettings.php:/var/www/html/LocalSettings.php
+    depends_on:
+      - db
+    environment:
+      MEDIAWIKI_DB_TYPE: mysql
+      MEDIAWIKI_DB_HOST: db
+      MEDIAWIKI_DB_NAME: 
+      MEDIAWIKI_DB_USER: 
+      MEDIAWIKI_DB_PASSWORD: 
+      MEDIAWIKI_ADMIN_PASSWORD: 
+
+  db:
+    image: mariadb:10.6
+    ports:
+      - "3307:3306"  # exposes the db at port 3307
+    environment:
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE:  # <-- Database name is consistent here
+      MYSQL_USER: 
+      MYSQL_PASSWORD: 
+    volumes:
+      # This volume stores the database files
+      - db_data:/var/lib/mysql
+
+volumes:
+  mw_data:
+  db_data:

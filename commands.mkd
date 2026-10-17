@@ -1,0 +1,49 @@
+# Docker & Terminal Commands
+
+This guide organizes all the commands used during your MediaWiki setup process, categorized by function, along with their descriptions and context of use.
+
+---
+
+## I. Project Setup & Initialization
+These commands were used to create your working environment and start the MediaWiki stack for the first time.
+
+| Command | Description | Context / Why We Used It |
+| :--- | :--- | :--- |
+| `mkdir ~/mediawiki-local` | Creates a new directory in your home folder. | To establish a clean, dedicated project space for your wiki files. |
+| `cd ~/mediawiki-local` | Changes your terminal's current working directory. | To ensure all subsequent commands (`nano`, `docker compose`) run from the correct location. |
+| `nano docker-compose.yml` | Opens the file in a simple text editor (Nano). | Used to initially create and paste the entire stack definition (services, volumes, environment variables) into the project folder. |
+| `docker compose up -d` | Builds and starts all services defined in your `docker-compose.yml` in detached mode (`-d`). | This is the primary command used to launch both the `wiki` container and the `db` (MariaDB) container simultaneously. |
+
+---
+
+## II. Diagnosis & Troubleshooting
+These commands were essential for checking the health of the containers and diagnosing why the setup wizard or database operations were failing.
+
+| Command | Description | Context / Why We Used It |
+| :--- | :--- | :--- |
+| `docker compose logs db` | Streams the output/logs specifically from the MariaDB container. | Used to check if the database container was successfully starting up, initializing its schema, and becoming "ready for connections." |
+| `docker compose exec wiki bash` | Executes a Bash shell *inside* the running `wiki` container. | This is like logging into the server remotely. It allows you to use standard Linux commands (`ls`, `cat`, etc.) inside the container's environment. |
+| `docker compose exec wiki ls -l /var/www/html` | Lists files in the MediaWiki web root directory inside the container. | Used to verify if your `LocalSettings.php` file was correctly placed and mounted within the running container. |
+| `curl http://localhost:8081/` | Attempts to fetch the data from the web server using HTTP. | Used to test the external network connectivity. If this works, you know the port is open and the wiki container is responding. |
+
+---
+
+## III. File Management & Configuration
+These commands were used when we needed to move or edit files between your Mac's host machine and the Docker containers.
+
+| Command | Description | Context / Why We Used It |
+| :--- | :--- | :--- |
+| `docker compose cp <container>:/path/to/file ./local_path` | Copies a file *from* inside the running container *to* your Mac's host machine. | Used when we needed to pull the generated `LocalSettings.php` out of the container so you could edit it safely on your computer. |
+| `docker compose cp ./local_path <container>:/path/to/file` | Copies a file *from* your Mac's host machine *into* the running container. | Used when we needed to place your custom `LocalSettings.php` or logo image inside the wiki's web root directory. |
+| `mv old_name new_name` | Renames a file or directory on your local machine. | Used when we needed to move files (like downloaded language packs) into the correct project folder. |
+
+---
+
+## IV. Cleanup & Maintenance
+These commands were used when we needed to reset the environment due to persistent errors.
+
+| Command | Description | Context / Why We Used It |
+| :--- | :--- | :--- |
+| `docker compose down -v` | Stops and removes the containers **AND** deletes all associated named volumes (`mw_data`, `db_data`). | This was used to perform a "nuclear reset." It wipes *all* database and media files, ensuring that the next startup is truly clean (a blank slate). |
+| `docker compose up -d` | Starts the containers fresh after a cleanup. | Used immediately following `down -v` to rebuild the environment from scratch. Note adding -v is destructive. If you just want to restart the containers use `docker compose down` |
+| `sleep 10` | Pauses the terminal process for 10 seconds. | Essential when starting MariaDB. It ensures the database service has enough time to initialize its schema and become ready before MediaWiki tries to connect. |
